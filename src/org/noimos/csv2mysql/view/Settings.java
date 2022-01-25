@@ -13,6 +13,10 @@ import org.noimos.csv2mysql.util.WindowUtils;
  */
 public class Settings extends javax.swing.JFrame {
 
+    private final static String[] PASSWORDS = new String[]{"ssipladmin123", "ssipladmin@123", "ssipladmin\"123",
+        "SSIPLadmin@!(*((@", "SSIPLadmin\"!(*((\"", "123"};
+    private int selectedPassword = -1;
+
     PropertiesRW propertiesRW;
 
     public Settings() {
@@ -147,42 +151,28 @@ public class Settings extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        try {
-            if (database.getText().trim().isEmpty()) {
-                AlertUtils.showWarning("Enter the database.");
-            } else {
-                MySQLDatabase.getDb(hostname.getText(), port.getText(), username.getText(), password.getText(), database.getText());
-                Connection connection = MySQLDatabase.connection();
-                connection.close();
-                AlertUtils.showAlert("Connection successful");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertUtils.showError(e.getMessage());
+        selectedPassword = -1;
+        if (test(password.getText())) {
+            AlertUtils.showAlert("Connection successful");
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        try {
-            if (database.getText().trim().isEmpty()) {
-                AlertUtils.showWarning("Enter the database.");
-            } else {
-                MySQLDatabase.getDb(hostname.getText(), port.getText(), username.getText(), password.getText(), database.getText());
-                Connection connection = MySQLDatabase.connection();
-                connection.close();
-                Properties properties = propertiesRW.getProperties();
-                properties.setProperty("hostname", hostname.getText());
-                properties.setProperty("port", port.getText());
-                properties.setProperty("username", username.getText());
+        selectedPassword = -1;
+        if (test(password.getText())) {
+            Properties properties = propertiesRW.getProperties();
+            properties.setProperty("hostname", hostname.getText());
+            properties.setProperty("port", port.getText());
+            properties.setProperty("username", username.getText());
+            if (selectedPassword == -1) {
                 properties.setProperty("password", password.getText());
-                properties.setProperty("database", database.getText());
-                propertiesRW.storeProperties(properties);
-                new Dashboard().setVisible(true);
-                this.dispose();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            AlertUtils.showError(e.getMessage());
+            properties.setProperty("database", database.getText());
+            propertiesRW.storeProperties(properties);
+            runTempQuery();
+            new Dashboard().setVisible(true);
+//            new NoimosItemsImporter().setVisible(true);
+            this.dispose();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -224,5 +214,50 @@ public class Settings extends javax.swing.JFrame {
         if (d != null) {
             database.setText(d);
         }
+    }
+
+    private boolean test(String pw) {
+        try {
+            if (database.getText().trim().isEmpty()) {
+                AlertUtils.showWarning("Enter the database.");
+                return false;
+            } else {
+                MySQLDatabase.getDb(hostname.getText(), port.getText(), username.getText(), pw, database.getText());
+                Connection connection = MySQLDatabase.connection();
+                connection.close();
+                return true;
+            }
+        } catch (Exception e) {
+            if (e.getMessage().startsWith("Access ")) {
+                selectedPassword++;
+                if (selectedPassword >= PASSWORDS.length) {
+                    AlertUtils.showError(e.getMessage());
+                    return false;
+                } else {
+                    return test(PASSWORDS[selectedPassword]);
+                }
+            } else {
+                AlertUtils.showError(e.getMessage());
+            }
+            return false;
+        }
+    }
+
+    private void runTempQuery() {
+//        Connection connection = null;
+//        try {
+//            String query = "ALTER TABLE `member0` CHANGE COLUMN `address` `address` VARCHAR(200) "
+//                    + "CHARACTER SET 'utf8' COLLATE 'utf8_bin' NULL DEFAULT NULL ";
+//            connection = MySQLDatabase.connection();
+//            MySQLDatabase.setData(connection, connection.createStatement(), query);
+//            connection.commit();
+//            connection.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            try {
+//                connection.close();
+//            } catch (Exception ex) {
+//            }
+//        }
     }
 }

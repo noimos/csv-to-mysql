@@ -2,7 +2,9 @@ package org.noimos.csv2mysql.view;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -20,6 +22,7 @@ public class Dashboard extends javax.swing.JFrame {
 
     File file = null;
     int count = 0;
+    String columns = "";
 
     public Dashboard() {
         initComponents();
@@ -41,6 +44,12 @@ public class Dashboard extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         progress = new javax.swing.JProgressBar();
         rowsLabel = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("CSV to MySQL Application");
@@ -56,6 +65,12 @@ public class Dashboard extends javax.swing.JFrame {
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
+            }
+        });
+
+        tableCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tableComboActionPerformed(evt);
             }
         });
 
@@ -117,15 +132,86 @@ public class Dashboard extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jPanel2.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
+
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText("Advanced Options");
+
+        jButton3.setText("Import Item Categories");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText("Import Items");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jButton5.setText("Import Shares");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        jButton6.setText("Import Members");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton5)
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -160,7 +246,7 @@ public class Dashboard extends javax.swing.JFrame {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                FileReader fr = null;
+                BufferedReader br = null;
                 Connection connection = null;
                 try {
                     connection = MySQLDatabase.connection();
@@ -168,8 +254,7 @@ public class Dashboard extends javax.swing.JFrame {
                     tableCombo.setEnabled(false);
                     jButton1.setEnabled(false);
                     jButton2.setEnabled(false);
-                    fr = new FileReader(file);
-                    BufferedReader br = new BufferedReader(fr);
+                    br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
                     String line;
                     int index = 0;
                     while ((line = br.readLine()) != null) {
@@ -182,7 +267,6 @@ public class Dashboard extends javax.swing.JFrame {
                     }
                     progress.setValue(100);
                     br.close();
-                    fr.close();
                     AlertUtils.showAlert("Completed!");
                     progress.setValue(0);
                     rowsLabel.setText("");
@@ -196,7 +280,7 @@ public class Dashboard extends javax.swing.JFrame {
                     jButton1.setEnabled(true);
                     jButton2.setEnabled(true);
                     try {
-                        fr.close();
+                        br.close();
                     } catch (Exception ex) {
                     }
                     try {
@@ -208,13 +292,68 @@ public class Dashboard extends javax.swing.JFrame {
         }).start();
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void tableComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tableComboActionPerformed
+        Connection connection = null;
+        try {
+            String query = "SHOW COLUMNS FROM " + tableCombo.getSelectedItem();
+            connection = MySQLDatabase.connection();
+            ResultSet rs = MySQLDatabase.getData(connection, connection.createStatement(), query);
+            boolean isFirst = true;
+            StringBuilder sb = new StringBuilder("(");
+            boolean skippedFirst = false;
+            while (rs.next()) {
+                if (skippedFirst) {
+                    if (!isFirst) {
+                        sb.append(",");
+                    }
+                    String col = rs.getString(1);
+                    sb.append(col);
+                    isFirst = false;
+                } else {
+                    skippedFirst = true;
+                }
+            }
+            sb.append(")");
+            columns = sb.toString();
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                connection.close();
+            } catch (Exception ex) {
+            }
+        }
+    }//GEN-LAST:event_tableComboActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        new ItemCategoryImporter(this, true).setVisible(true);
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        new ItemImporter(this, true).setVisible(true);
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        new SharesImporter(this, true).setVisible(true);
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+       new NoimosPeopleImporter().setVisible(true);
+    }//GEN-LAST:event_jButton6ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField fileText;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JProgressBar progress;
     private javax.swing.JLabel rowsLabel;
     private javax.swing.JComboBox<String> tableCombo;
@@ -242,19 +381,25 @@ public class Dashboard extends javax.swing.JFrame {
     }
 
     private String getQuery(String table, String line) {
-        StringBuilder query = new StringBuilder("INSERT INTO " + table + " VALUES (");
+        StringBuilder query = new StringBuilder("INSERT INTO " + table + columns + " VALUES (");
         String[] values = line.split("\t");
         boolean isFirst = true;
+        boolean skippedFirst = false;
         for (String value : values) {
-            if (!isFirst) {
-                query.append(",");
+            if (skippedFirst) {
+                if (!isFirst) {
+                    query.append(",");
+                }
+                query.append("'");
+                query.append(value.trim().replace("'", "\'"));
+                query.append("'");
+                isFirst = false;
+            } else {
+                skippedFirst = true;
             }
-            query.append("'");
-            query.append(value);
-            query.append("'");
-            isFirst = false;
         }
         query.append(")");
+        System.out.println(query);
         return query.toString();
     }
 }
